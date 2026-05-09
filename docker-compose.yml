@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:17
+    container_name: pocketmarket-db
+
+    environment:
+      POSTGRES_DB: pocketmarket
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 123456
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - pocket-network
+
+    restart: always
+
+
+  app:
+    build: .
+    container_name: pocketmarket-api
+
+    depends_on:
+      - db
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/pocketmarket
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: 123456
+
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: docker
+
+    ports:
+      - "8080:8080"
+
+    networks:
+      - pocket-network
+
+    restart: always
+
+
+volumes:
+  postgres_data:
+
+
+networks:
+  pocket-network:
+    driver: bridge
