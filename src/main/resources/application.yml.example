@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/pocketmarket
     username: postgres
-    password: 3124
+    password: SUA_SENHA_AQUI
   jpa:
     hibernate:
       ddl-auto: update
@@ -11,4 +11,4 @@ spring:
 api:
   security:
     token:
-      secret: pocketmarket-secret-jwt-2026
+      secret: COLOQUE_UMA_CHAVE_SECRETA_AQUI
