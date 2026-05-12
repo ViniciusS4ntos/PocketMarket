@@ -1,13 +1,14 @@
 package com.pocketmarket.auth;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.pocketmarket.user.User;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
 @Service
 public class JwtService {
@@ -15,18 +16,26 @@ public class JwtService {
     @Value("${api.security.token.secret}")
     private String secret;
 
+    private SecretKey getKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
     public String generateToken(User user) {
-        return JWT.create()
-                .withSubject(user.getEmail())
-                .withClaim("name", user.getName())
-                .withExpiresAt(Instant.now().plus(8, ChronoUnit.HOURS))
-                .sign(Algorithm.HMAC256(secret));
+        return Jwts.builder()
+                .subject(user.getEmail())
+                .claim("name", user.getName())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 8))
+                .signWith(getKey())
+                .compact();
     }
 
     public String validateToken(String token) {
-        return JWT.require(Algorithm.HMAC256(secret))
+        return Jwts.parser()
+                .verifyWith(getKey())
                 .build()
-                .verify(token)
+                .parseSignedClaims(token)
+                .getPayload()
                 .getSubject();
     }
 }
