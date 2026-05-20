@@ -15,3 +15,7 @@ spring:
 
   jackson:
     time-zone: America/Recife
+api:
+  security:
+    token:
+      secret: "KJASDHUIASHDUIASHDIUASHDIUASHDIUASHDIUASHDIUASHDIUASHD"
