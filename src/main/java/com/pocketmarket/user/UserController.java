@@ -1,13 +1,11 @@
 package com.pocketmarket.user;
 
+import com.pocketmarket.user.dtos.in.UserDTORequest;
 import com.pocketmarket.user.dtos.out.UserDTOResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -20,9 +18,17 @@ public class UserController {
     private ModelMapper mapper;
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTOResponse> buscarUsuarioPorId(@PathVariable("id") Integer  id){
+    public ResponseEntity<UserDTOResponse> buscarUsuarioPorId(@PathVariable Integer  id){
         return ResponseEntity.ok(
                 mapper.map(userService.buscarPerfilPorId(id), UserDTOResponse.class)
+        );
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTOResponse> atualizarPerfil(@PathVariable Integer id, @RequestBody UserDTORequest user){
+        User entity = mapper.map(user, User.class);
+        return ResponseEntity.ok(
+                mapper.map(userService.atualizarPerfil(id, entity), UserDTOResponse.class)
         );
     }
 
