@@ -3,9 +3,9 @@ spring:
     name: pocketmarket
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pocketmarket}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:2006}
 
   jpa:
     hibernate:
@@ -15,3 +15,8 @@ spring:
 
   jackson:
     time-zone: America/Recife
+
+api:
+  security:
+    token:
+      secret: 8fK#vQ2mL@9xTz!A7rP$uN5wE&cY1hJkL0sDfG^bNmQ4vXzR!pT8yHcW3mQa
