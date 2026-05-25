@@ -27,6 +27,9 @@ services:
     build: .
     container_name: pocketmarket-api
 
+    volumes:
+      - uploads_data:/app/uploads
+
     depends_on:
       - db
 
@@ -49,6 +52,7 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
 
 
 networks:
