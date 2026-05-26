@@ -1,3 +1,4 @@
+/*axios.get("/api/v2/cards")*/
 CREATE TABLE cards (
                        id UUID PRIMARY KEY,
 
