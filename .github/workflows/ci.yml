@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "develop", "feat/*" ]
+  pull_request:
+    branches: [ "main", "develop" ]  # ← adiciona develop aqui também
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build com Maven
+        run: mvn -B package -DskipTests
+
+      - name: Build e sobe com Docker Compose
+        run: docker compose up --build -d
+
+      - name: Aguarda Postgres ficar pronto
+        run: |
+          echo "Aguardando Postgres..."
+          sleep 20
+          docker compose ps
+
+      - name: Verifica se os containers estão rodando
+        run: docker compose ps
+
+      - name: Derruba os containers
+        run: docker compose down
