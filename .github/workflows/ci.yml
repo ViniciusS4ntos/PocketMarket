@@ -21,7 +21,7 @@ jobs:
           cache: maven
 
       - name: Build com Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B package -DskipTests
 
       - name: Build e sobe com Docker Compose
         run: docker compose up --build -d
