@@ -1,10 +1,10 @@
-name: Java CI with Maven
+name: CI
 
 on:
   push:
-    branches: [ "main", "develop" ]  # roda nas duas branches
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]             # e quando abrir PR pra main
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -20,5 +20,20 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
+      - name: Build com Maven
         run: mvn -B package --file pom.xml
+
+      - name: Build e sobe com Docker Compose
+        run: docker compose up --build -d
+
+      - name: Aguarda Postgres ficar pronto
+        run: |
+          echo "Aguardando Postgres..."
+          sleep 20
+          docker compose ps
+
+      - name: Verifica se os containers estão rodando
+        run: docker compose ps
+
+      - name: Derruba os containers
+        run: docker compose down
