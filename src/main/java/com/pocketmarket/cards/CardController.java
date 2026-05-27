@@ -3,6 +3,8 @@ package com.pocketmarket.cards;
 import com.pocketmarket.cards.dto.CardRequestDTO;
 import com.pocketmarket.cards.dto.CardResponseDTO;
 
+import com.pocketmarket.user.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,10 +21,11 @@ public class CardController {
     }
 
     @PostMapping
-    public CardResponseDTO create(@RequestBody CardRequestDTO request) {
+    public CardResponseDTO create(@RequestBody CardRequestDTO request, @AuthenticationPrincipal User currentUser) {
 
         Card card = new Card();
 
+        card.setOwner(currentUser);
         card.setName(request.name());
         card.setSetName(request.setName());
         card.setRarity(request.rarity());
