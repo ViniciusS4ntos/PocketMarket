@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main", "develop", "feat/*" ]
   pull_request:
-    branches: [ "main", "develop" ]  # ← adiciona develop aqui também
+    branches: [ "main", "develop" ]
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
           cache: maven
 
       - name: Build com Maven
-        run: mvn -B package -DskipTests
+        run: mvn -B package -DskipTests # Pular testes
 
       - name: Build e sobe com Docker Compose
         run: docker compose up --build -d
