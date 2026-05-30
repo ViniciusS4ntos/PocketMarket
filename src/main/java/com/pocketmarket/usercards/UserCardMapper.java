@@ -21,7 +21,8 @@ public class UserCardMapper {
         return new UserCardResponse(
                 userCardSaved.getId(),
                 userCardSaved.getCard(),
-                userCardSaved.getOwner(),
+                userCardSaved.getOwner().getId(),
+                userCardSaved.getOwner().getName(),
                 userCardSaved.getCondition(),
                 userCardSaved.getStatus(),
                 userCardSaved.getProofImageUrl(),

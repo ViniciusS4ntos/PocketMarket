@@ -31,10 +31,11 @@ class UserCardMapperTest {
 
     @Test
     void toResponseMapsEntity() {
+        UUID ownerId = UUID.randomUUID();
         UserCard userCard = UserCard.builder()
                 .id(UUID.randomUUID())
                 .card(Card.builder().build())
-                .owner(User.builder().build())
+                .owner(User.builder().id(ownerId).name("Ash").build())
                 .condition(CardCondition.NM)
                 .status(UserCardStatus.AVAILABLE)
                 .proofImageUrl("proof.png")
@@ -46,6 +47,8 @@ class UserCardMapperTest {
         UserCardResponse response = UserCardMapper.toResponse(userCard);
 
         assertThat(response.id()).isEqualTo(userCard.getId());
+        assertThat(response.ownerId()).isEqualTo(ownerId);
+        assertThat(response.ownerName()).isEqualTo("Ash");
         assertThat(response.proofImageUrl()).isEqualTo(userCard.getProofImageUrl());
     }
 }

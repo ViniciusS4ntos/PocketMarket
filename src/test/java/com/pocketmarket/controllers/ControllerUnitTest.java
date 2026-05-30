@@ -129,12 +129,22 @@ class ControllerUnitTest {
 
         UserCardService userCardService = mock(UserCardService.class);
         UserCardController userCardController = new UserCardController(userCardService);
-        User user = User.builder().id(UUID.randomUUID()).build();
+        User user = User.builder().id(UUID.randomUUID()).name("Ash").build();
         UserCardRequest request = new UserCardRequest("base1-4", CardCondition.NM, "proof.png");
-        UserCardResponse response = new UserCardResponse(UUID.randomUUID(), null, user, CardCondition.NM, null, "proof.png", null, null, null);
+        UserCardResponse response = new UserCardResponse(UUID.randomUUID(), null, user.getId(), user.getName(), CardCondition.NM, null, "proof.png", null, null, null);
+        UUID userCardId = response.id();
+        PageRequest pageable = PageRequest.of(0, 20);
+        Page<UserCardResponse> page = new PageImpl<>(List.of(response), pageable, 1);
         when(userCardService.createUserCard(user, request)).thenReturn(response);
+        when(userCardService.getMyCards(user, pageable)).thenReturn(page);
+        when(userCardService.getUserCard(userCardId)).thenReturn(response);
 
         assertThat(userCardController.createUserCard(user, request)).isSameAs(response);
+        assertThat(userCardController.getMyCards(user, pageable)).isSameAs(page);
+        assertThat(userCardController.getUserCard(userCardId)).isSameAs(response);
+
+        userCardController.deleteUserCard(userCardId, user);
+        verify(userCardService).deleteUserCard(userCardId, user);
     }
 
     private CardCatalogResponse catalogResponse() {
