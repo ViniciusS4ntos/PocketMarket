@@ -68,10 +68,10 @@ public class CollectionService {
                 card.getId(),
                 card.getName(),
                 card.getSetName(),
-                card.getRarity() != null ? card.getRarity().name() : null,
-                card.getCondition() != null ? card.getCondition().name() : null,
-                card.getPrice(),
-                card.getImageUrl(),
+                card.getRarity(),
+                null,
+                null,
+                card.getImageSmallUrl(),
                 cc.getQuantity(),
                 cc.getAddedAt()
         );

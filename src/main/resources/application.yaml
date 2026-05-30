@@ -32,4 +32,8 @@ api:
     token:
       secret: 8fK#vQ2mL@9xTz!A7rP$uN5wE&cY1hJkL0sDfG^bNmQ4vXzR!pT8yHcW3mQa
 
+pokemon-tcg:
+  base-url: https://api.pokemontcg.io/v2
+  api-key:
+
 kind: Application

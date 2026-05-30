@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 
 @Entity
@@ -19,8 +20,8 @@ import java.util.List;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
@@ -34,6 +35,9 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserRole role = UserRole.USER;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Long credits = 0L;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

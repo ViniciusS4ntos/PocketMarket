@@ -1,54 +1,62 @@
 package com.pocketmarket.cards;
 
+import com.pocketmarket.cardcatalog.PokemonTcgClient;
+import com.pocketmarket.cardcatalog.dto.PokemonTcgCardResponse;
+import com.pocketmarket.cards.dto.CardResponseDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class CardService {
 
     private final CardRepository cardRepository;
+    private final PokemonTcgClient pokemonTcgClient;
 
-    public CardService(CardRepository cardRepository) {
-        this.cardRepository = cardRepository;
+    public List<CardResponseDTO> findAllCards() {
+
+        return cardRepository.findAll()
+                .stream()
+                .map(CardMapper::toResponse)
+                .toList();
     }
 
-    public Card create(Card card) {
-        return cardRepository.save(card);
-    }
-
-    public List<Card> findAll() {
-        return cardRepository.findAll();
-    }
-
-    public Card findById(UUID id) {
-        return cardRepository.findById(id)
+    public CardResponseDTO findCard(UUID id) {
+        Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Carta não encontrada"));
-    }
-
-    public Card update(UUID id, Card updatedCard) {
-
-        Card existingCard = findById(id);
-
-        existingCard.setName(updatedCard.getName());
-        existingCard.setSetName(updatedCard.getSetName());
-        existingCard.setRarity(updatedCard.getRarity());
-        existingCard.setCondition(updatedCard.getCondition());
-        existingCard.setPrice(updatedCard.getPrice());
-        existingCard.setStock(updatedCard.getStock());
-        existingCard.setImageUrl(updatedCard.getImageUrl());
-        existingCard.setDescription(updatedCard.getDescription());
-
-        return cardRepository.save(existingCard);
+        return CardMapper.toResponse(card);
     }
 
     public void delete(UUID id) {
 
-        Card card = findById(id);
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Carta não encontrada"));
 
         card.setDeleted(true);
 
         cardRepository.save(card);
+    }
+
+    public Card findOrImportByExternalId(String externalCardId) {
+        return cardRepository.findByExternalId(externalCardId)
+                .orElseGet(() -> importFromPokemonTcgApi(externalCardId));
+    }
+
+    private Card importFromPokemonTcgApi(String externalCardId) {
+        PokemonTcgCardResponse pokemonCard = pokemonTcgClient.findByExternalId(externalCardId);
+
+        if (pokemonCard == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Carta não encontrada no Pokémon TCG API.");
+        }
+
+        Card card = CardMapper.toEntity(pokemonCard);
+
+        return cardRepository.save(card);
     }
 }

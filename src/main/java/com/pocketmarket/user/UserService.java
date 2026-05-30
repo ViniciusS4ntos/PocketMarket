@@ -1,9 +1,12 @@
 package com.pocketmarket.user;
 
+import com.pocketmarket.user.dtos.out.UserCreditsResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -13,13 +16,13 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     // visualizar perfil
-    public User buscarPerfilPorId(Integer id){
+    public User buscarPerfilPorId(UUID id){
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Perfil nao encontrado!"));
     }
 
     // atualizar Perfil
-    public User atualizarPerfil(Integer id, User user){
+    public User atualizarPerfil(UUID id, User user){
 
         User entity = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario nao encontrado!"));
@@ -38,4 +41,11 @@ public class UserService {
                 .build();
     }
 
+    public ResponseEntity<UserCreditsResponse> myCredits(User currentUser) {
+
+        User user = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado!"));
+
+        return ResponseEntity.ok(new UserCreditsResponse(user.getCredits()));
+    }
 }
