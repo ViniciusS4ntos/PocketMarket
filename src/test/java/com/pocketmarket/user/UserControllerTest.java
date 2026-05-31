@@ -1,5 +1,6 @@
 package com.pocketmarket.user;
 
+import com.pocketmarket.user.dtos.in.UserCreditsRequest;
 import com.pocketmarket.user.dtos.in.UserDTORequest;
 import com.pocketmarket.user.dtos.out.UserCreditsResponse;
 import com.pocketmarket.user.dtos.out.UserDTOResponse;
@@ -63,6 +64,19 @@ class UserControllerTest {
         when(userService.myCredits(user)).thenReturn(response);
 
         assertThat(controller.myCredits(user)).isSameAs(response);
+    }
+
+    @Test
+    void addCreditsDelegatesToService() {
+        UserController controller = controller();
+        UserService userService = mock(UserService.class);
+        ReflectionTestUtils.setField(controller, "userService", userService);
+        UUID userId = UUID.randomUUID();
+        UserCreditsRequest request = new UserCreditsRequest(50L);
+        UserCreditsResponse response = new UserCreditsResponse(150L);
+        when(userService.addCredits(userId, request)).thenReturn(response);
+
+        assertThat(controller.addCredits(userId, request)).isSameAs(response);
     }
 
     private UserController controller() {

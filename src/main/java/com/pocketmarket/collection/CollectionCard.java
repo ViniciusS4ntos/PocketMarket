@@ -1,7 +1,7 @@
 package com.pocketmarket.collection;
 
-import com.pocketmarket.cards.Card;
 import com.pocketmarket.user.User;
+import com.pocketmarket.usercards.UserCard;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +11,7 @@ import java.util.UUID;
 @Entity
 @Table(
         name = "collection_cards",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "card_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "user_card_id"})
 )
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
@@ -26,11 +26,8 @@ public class CollectionCard {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id", nullable = false)
-    private Card card;
-
-    @Column(nullable = false)
-    private Integer quantity;
+    @JoinColumn(name = "user_card_id", nullable = false)
+    private UserCard userCard;
 
     @Column(nullable = false)
     private LocalDateTime addedAt;

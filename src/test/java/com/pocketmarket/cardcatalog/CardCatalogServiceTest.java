@@ -42,6 +42,17 @@ class CardCatalogServiceTest {
     }
 
     @Test
+    void searchByNameThrowsWhenNameIsMissing() {
+        assertThatThrownBy(() -> cardCatalogService.searchByName(null))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Carta não encontrada no catálogo");
+
+        assertThatThrownBy(() -> cardCatalogService.searchByName(""))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Carta não encontrada no catálogo");
+    }
+
+    @Test
     void findCardsReturnsEmptyPageWhenClientReturnsNull() {
         Page<CardCatalogResponse> response = cardCatalogService.findCards(PageRequest.of(0, 20));
 
@@ -57,6 +68,16 @@ class CardCatalogServiceTest {
 
         assertThat(response.getTotalElements()).isEqualTo(1);
         assertThat(response.getContent().getFirst().name()).isEqualTo("Charizard");
+    }
+
+    @Test
+    void findCardsReturnsEmptyPageWhenClientDataIsNull() {
+        when(pokemonTcgClient.findCards(PageRequest.of(0, 20)))
+                .thenReturn(new PokemonTcgSearchResponse(null, 1, 20, 0, 0));
+
+        Page<CardCatalogResponse> response = cardCatalogService.findCards(PageRequest.of(0, 20));
+
+        assertThat(response).isEmpty();
     }
 
     @Test
