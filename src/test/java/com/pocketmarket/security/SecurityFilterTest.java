@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -42,6 +43,20 @@ class SecurityFilterTest {
     void doFilterContinuesWithoutAuthenticationWhenHeaderIsMissing() throws Exception {
         SecurityFilter filter = new SecurityFilter(jwtService, userRepository);
         MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, filterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        verify(filterChain).doFilter(request, response);
+        verifyNoInteractions(jwtService, userRepository);
+    }
+
+    @Test
+    void doFilterContinuesWithoutAuthenticationWhenHeaderIsNotBearer() throws Exception {
+        SecurityFilter filter = new SecurityFilter(jwtService, userRepository);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Basic abc");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(request, response, filterChain);
@@ -86,5 +101,20 @@ class SecurityFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void doFilterThrowsWhenTokenUserDoesNotExist() {
+        SecurityFilter filter = new SecurityFilter(jwtService, userRepository);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer jwt");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        when(jwtService.validateToken("jwt")).thenReturn("missing@pm.com");
+        when(userRepository.findByEmail("missing@pm.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> filter.doFilter(request, response, filterChain))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Id do usuario  nao encontrado!");
     }
 }

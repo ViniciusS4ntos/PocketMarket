@@ -17,6 +17,7 @@ class UserCardMapperTest {
 
     @Test
     void toEntityMapsRequestUserAndCard() {
+        assertThat(new UserCardMapper()).isNotNull();
         User user = User.builder().id(UUID.randomUUID()).build();
         Card card = Card.builder().id(UUID.randomUUID()).build();
         UserCardRequest request = new UserCardRequest("base1-4", CardCondition.LP, "proof.png");

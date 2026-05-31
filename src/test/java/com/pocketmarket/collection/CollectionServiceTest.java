@@ -1,10 +1,10 @@
 package com.pocketmarket.collection;
 
-import com.pocketmarket.cards.Card;
-import com.pocketmarket.cards.CardRepository;
 import com.pocketmarket.collection.dto.CollectionRequest;
 import com.pocketmarket.collection.dto.CollectionResponse;
 import com.pocketmarket.user.User;
+import com.pocketmarket.usercards.UserCard;
+import com.pocketmarket.usercards.UserCardRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,7 +29,7 @@ class CollectionServiceTest {
     private CollectionRepository collectionRepository;
 
     @Mock
-    private CardRepository cardRepository;
+    private UserCardRepository userCardRepository;
 
     @InjectMocks
     private CollectionService collectionService;
@@ -37,59 +37,70 @@ class CollectionServiceTest {
     @Test
     void addToCollectionCreatesNewItem() {
         User user = user();
-        Card card = card();
-        CollectionRequest request = new CollectionRequest(card.getId(), 2);
+        UserCard userCard = userCard(user);
+        CollectionRequest request = new CollectionRequest(userCard.getId());
 
-        when(cardRepository.findById(card.getId())).thenReturn(Optional.of(card));
-        when(collectionRepository.findByUserIdAndCardId(user.getId(), card.getId())).thenReturn(Optional.empty());
+        when(userCardRepository.findById(userCard.getId())).thenReturn(Optional.of(userCard));
+        when(collectionRepository.findByUserIdAndUserCardId(user.getId(), userCard.getId())).thenReturn(Optional.empty());
         when(collectionRepository.save(org.mockito.ArgumentMatchers.any(CollectionCard.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         CollectionResponse response = collectionService.addToCollection(request, user);
 
-        assertThat(response.cardId()).isEqualTo(card.getId());
-        assertThat(response.quantity()).isEqualTo(2);
+        assertThat(response.userCardId()).isEqualTo(userCard.getId());
         verify(collectionRepository).save(org.mockito.ArgumentMatchers.any(CollectionCard.class));
     }
 
     @Test
-    void addToCollectionIncrementsExistingItem() {
+    void addToCollectionReturnsExistingItemWhenAlreadyInCollection() {
         User user = user();
-        Card card = card();
+        UserCard userCard = userCard(user);
         CollectionCard existing = CollectionCard.builder()
                 .user(user)
-                .card(card)
-                .quantity(1)
+                .userCard(userCard)
                 .addedAt(LocalDateTime.now())
                 .build();
 
-        when(cardRepository.findById(card.getId())).thenReturn(Optional.of(card));
-        when(collectionRepository.findByUserIdAndCardId(user.getId(), card.getId())).thenReturn(Optional.of(existing));
+        when(userCardRepository.findById(userCard.getId())).thenReturn(Optional.of(userCard));
+        when(collectionRepository.findByUserIdAndUserCardId(user.getId(), userCard.getId())).thenReturn(Optional.of(existing));
 
-        CollectionResponse response = collectionService.addToCollection(new CollectionRequest(card.getId(), 3), user);
+        CollectionResponse response = collectionService.addToCollection(new CollectionRequest(userCard.getId()), user);
 
-        assertThat(response.quantity()).isEqualTo(4);
+        assertThat(response.userCardId()).isEqualTo(userCard.getId());
         verify(collectionRepository).save(existing);
     }
 
     @Test
     void addToCollectionThrowsWhenCardDoesNotExist() {
-        UUID cardId = UUID.randomUUID();
-        when(cardRepository.findById(cardId)).thenReturn(Optional.empty());
+        UUID userCardId = UUID.randomUUID();
+        when(userCardRepository.findById(userCardId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> collectionService.addToCollection(new CollectionRequest(cardId, 1), user()))
+        assertThatThrownBy(() -> collectionService.addToCollection(new CollectionRequest(userCardId), user()))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("Card not found");
     }
 
     @Test
+    void addToCollectionThrowsWhenUserCardBelongsToAnotherUser() {
+        User user = user();
+        User otherUser = user();
+        UserCard userCard = userCard(otherUser);
+
+        when(userCardRepository.findById(userCard.getId())).thenReturn(Optional.of(userCard));
+
+        assertThatThrownBy(() -> collectionService.addToCollection(new CollectionRequest(userCard.getId()), user))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("UserCard não pertence ao usuario atual");
+    }
+
+    @Test
     void listCollectionMapsItems() {
         User user = user();
+        UserCard userCard = userCard(user);
         CollectionCard item = CollectionCard.builder()
                 .id(UUID.randomUUID())
                 .user(user)
-                .card(card())
-                .quantity(1)
+                .userCard(userCard)
                 .addedAt(LocalDateTime.now())
                 .build();
         when(collectionRepository.findAllByUserId(user.getId())).thenReturn(List.of(item));
@@ -98,16 +109,18 @@ class CollectionServiceTest {
 
         assertThat(response).hasSize(1);
         assertThat(response.getFirst().collectionId()).isEqualTo(item.getId());
+        assertThat(response.getFirst().userCardId()).isEqualTo(userCard.getId());
     }
 
     @Test
     void removeFromCollectionDeletesItem() {
         User user = user();
-        UUID cardId = UUID.randomUUID();
-        CollectionCard item = CollectionCard.builder().build();
-        when(collectionRepository.findByUserIdAndCardId(user.getId(), cardId)).thenReturn(Optional.of(item));
+        UserCard userCard = userCard(user);
+        CollectionCard item = CollectionCard.builder().user(user).userCard(userCard).build();
+        when(userCardRepository.findById(userCard.getId())).thenReturn(Optional.of(userCard));
+        when(collectionRepository.findByUserIdAndUserCardId(user.getId(), userCard.getId())).thenReturn(Optional.of(item));
 
-        collectionService.removeFromCollection(cardId, user);
+        collectionService.removeFromCollection(userCard.getId(), user);
 
         verify(collectionRepository).delete(item);
     }
@@ -115,25 +128,47 @@ class CollectionServiceTest {
     @Test
     void removeFromCollectionThrowsWhenItemDoesNotExist() {
         User user = user();
-        UUID cardId = UUID.randomUUID();
-        when(collectionRepository.findByUserIdAndCardId(user.getId(), cardId)).thenReturn(Optional.empty());
+        UserCard userCard = userCard(user);
+        when(userCardRepository.findById(userCard.getId())).thenReturn(Optional.of(userCard));
+        when(collectionRepository.findByUserIdAndUserCardId(user.getId(), userCard.getId())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> collectionService.removeFromCollection(cardId, user))
+        assertThatThrownBy(() -> collectionService.removeFromCollection(userCard.getId(), user))
                 .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("Card not in collection");
+                .hasMessageContaining("UserCard não está na coleção");
+    }
+
+    @Test
+    void removeFromCollectionThrowsWhenUserCardDoesNotExist() {
+        User user = user();
+        UUID userCardId = UUID.randomUUID();
+        when(userCardRepository.findById(userCardId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> collectionService.removeFromCollection(userCardId, user))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Card not found");
+    }
+
+    @Test
+    void removeFromCollectionThrowsWhenUserCardBelongsToAnotherUser() {
+        User user = user();
+        User otherUser = user();
+        UserCard userCard = userCard(otherUser);
+
+        when(userCardRepository.findById(userCard.getId())).thenReturn(Optional.of(userCard));
+
+        assertThatThrownBy(() -> collectionService.removeFromCollection(userCard.getId(), user))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("UserCard não pertence ao usuario atual");
     }
 
     private User user() {
         return User.builder().id(UUID.randomUUID()).email("ash@pm.com").build();
     }
 
-    private Card card() {
-        return Card.builder()
+    private UserCard userCard(User owner) {
+        return UserCard.builder()
                 .id(UUID.randomUUID())
-                .name("Charizard")
-                .setName("Base")
-                .rarity("Rare Holo")
-                .imageSmallUrl("small")
+                .owner(owner)
                 .build();
     }
 }

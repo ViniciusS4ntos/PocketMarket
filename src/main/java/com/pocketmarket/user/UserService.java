@@ -1,10 +1,13 @@
 package com.pocketmarket.user;
 
+import com.pocketmarket.user.dtos.in.UserCreditsRequest;
 import com.pocketmarket.user.dtos.out.UserCreditsResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -47,5 +50,16 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuario nao encontrado!"));
 
         return ResponseEntity.ok(new UserCreditsResponse(user.getCredits()));
+    }
+
+    @Transactional
+    public UserCreditsResponse addCredits(UUID userId, @Valid UserCreditsRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado!"));
+
+        user.setCredits(user.getCredits() + request.credits());
+        userRepository.save(user);
+
+        return new UserCreditsResponse(user.getCredits());
     }
 }

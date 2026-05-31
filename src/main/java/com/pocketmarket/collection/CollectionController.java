@@ -34,12 +34,12 @@ public class CollectionController {
         return ResponseEntity.ok(collectionService.listCollection(currentUser));
     }
 
-    @DeleteMapping("/{cardId}")
+    @DeleteMapping("/{userCardId}")
     public ResponseEntity<Void> removeFromCollection(
-            @PathVariable UUID cardId,
+            @PathVariable UUID userCardId,
             @AuthenticationPrincipal User currentUser) {
 
-        collectionService.removeFromCollection(cardId, currentUser);
+        collectionService.removeFromCollection(userCardId, currentUser);
         return ResponseEntity.noContent().build();
     }
 }

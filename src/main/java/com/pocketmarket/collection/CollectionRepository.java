@@ -10,5 +10,5 @@ public interface CollectionRepository extends JpaRepository<CollectionCard, UUID
 
     List<CollectionCard> findAllByUserId(UUID userId);
 
-    Optional<CollectionCard> findByUserIdAndCardId(UUID userId, UUID cardId);
+    Optional<CollectionCard> findByUserIdAndUserCardId(UUID userId, UUID userCardId);
 }

@@ -1,10 +1,10 @@
 package com.pocketmarket.collection;
 
-import com.pocketmarket.cards.Card;
-import com.pocketmarket.cards.CardRepository;
 import com.pocketmarket.collection.dto.CollectionRequest;
 import com.pocketmarket.collection.dto.CollectionResponse;
 import com.pocketmarket.user.User;
+import com.pocketmarket.usercards.UserCard;
+import com.pocketmarket.usercards.UserCardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,26 +19,27 @@ import java.util.UUID;
 public class CollectionService {
 
     private final CollectionRepository collectionRepository;
-    private final CardRepository cardRepository;
+    private final UserCardRepository userCardRepository;
 
     public CollectionResponse addToCollection(CollectionRequest request, User currentUser) {
-        Card card = cardRepository.findById(request.cardId())
+        UserCard userCard = userCardRepository.findById(request.userCardId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found"));
 
+        if (!userCard.getOwner().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "UserCard não pertence ao usuario atual");
+        }
+
         Optional<CollectionCard> existing = collectionRepository
-                .findByUserIdAndCardId(currentUser.getId(), request.cardId());
+                .findByUserIdAndUserCardId(currentUser.getId(), request.userCardId());
 
         CollectionCard collectionCard;
 
         if (existing.isPresent()) {
-            // Upsert: soma a quantity enviada na já existente
             collectionCard = existing.get();
-            collectionCard.setQuantity(collectionCard.getQuantity() + request.quantity());
         } else {
             collectionCard = CollectionCard.builder()
                     .user(currentUser)
-                    .card(card)
-                    .quantity(request.quantity())
+                    .userCard(userCard)
                     .build();
         }
 
@@ -53,26 +54,27 @@ public class CollectionService {
                 .toList();
     }
 
-    public void removeFromCollection(UUID cardId, User currentUser) {
+    public void removeFromCollection(UUID userCardId, User currentUser) {
+
+        UserCard userCard = userCardRepository.findById(userCardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found"));
+
+        if (!userCard.getOwner().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "UserCard não pertence ao usuario atual");
+        }
+
         CollectionCard collectionCard = collectionRepository
-                .findByUserIdAndCardId(currentUser.getId(), cardId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not in collection"));
+                .findByUserIdAndUserCardId(currentUser.getId(), userCardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "UserCard não está na coleção"));
 
         collectionRepository.delete(collectionCard);
     }
 
     private CollectionResponse toResponse(CollectionCard cc) {
-        Card card = cc.getCard();
+        UserCard userCard = cc.getUserCard();
         return new CollectionResponse(
                 cc.getId(),
-                card.getId(),
-                card.getName(),
-                card.getSetName(),
-                card.getRarity(),
-                null,
-                null,
-                card.getImageSmallUrl(),
-                cc.getQuantity(),
+                userCard.getId(),
                 cc.getAddedAt()
         );
     }
