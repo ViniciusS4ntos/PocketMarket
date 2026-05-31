@@ -153,6 +153,43 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<excludes>
+						<exclude>**/*Application.class</exclude>
+						<exclude>**/*Config.class</exclude>
+						<exclude>**/*Properties.class</exclude>
+						<exclude>**/controleTeste/**</exclude>
+						<exclude>**/config/**</exclude>
+						<exclude>**/dto/**</exclude>
+						<exclude>**/dtos/**</exclude>
+						<exclude>**/enums/**</exclude>
+						<exclude>**/*Repository.class</exclude>
+						<exclude>**/Card.class</exclude>
+						<exclude>**/CollectionCard.class</exclude>
+						<exclude>**/Favorite.class</exclude>
+						<exclude>**/User.class</exclude>
+						<exclude>**/UserCard.class</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

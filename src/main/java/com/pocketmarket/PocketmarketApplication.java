@@ -1,11 +1,12 @@
 package com.pocketmarket;
 
+import com.pocketmarket.cardcatalog.PokemonTcgProperties;
 import com.pocketmarket.upload.config.StorageProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-@EnableConfigurationProperties(StorageProperties.class)
+@EnableConfigurationProperties({StorageProperties.class, PokemonTcgProperties.class})
 @SpringBootApplication
 public class PocketmarketApplication {
 

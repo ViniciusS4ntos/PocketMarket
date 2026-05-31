@@ -1,137 +1,73 @@
 package com.pocketmarket.cards;
 
-import com.pocketmarket.enums.CardCondition;
-import com.pocketmarket.enums.CardRarity;
-import com.pocketmarket.user.User;
-
 import jakarta.persistence.*;
+import lombok.*;
 
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "cards")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Card {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    @Column(nullable = false, unique = true)
+    private String externalId;
 
     @Column(nullable = false)
     private String name;
 
+    private String setId;
+
     private String setName;
 
-    @Enumerated(EnumType.STRING)
-    private CardRarity rarity;
+    private String number;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "card_condition")
-    private CardCondition condition;
+    private String rarity;
 
-    @Column(nullable = false)
-    private BigDecimal price;
+    @Column(length = 500)
+    private String imageSmallUrl;
 
-    private Integer stock;
-
-    private String imageUrl;
+    @Column(length = 500)
+    private String imageLargeUrl;
 
     private String description;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private String source = "POKEMON_TCG_API";
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    private void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+
+        this.createdAt = now;
+        this.updatedAt = now;
+
+        if (this.source == null || this.source.isBlank()) {
+            this.source = "POKEMON_TCG_API";
+        }
+    }
+
+    @Builder.Default
     private Boolean deleted = false;
 
-    public Card() {
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSetName() {
-        return setName;
-    }
-
-    public void setSetName(String setName) {
-        this.setName = setName;
-    }
-
-    public CardRarity getRarity() {
-        return rarity;
-    }
-
-    public void setRarity(CardRarity rarity) {
-        this.rarity = rarity;
-    }
-
-    public CardCondition getCondition() {
-        return condition;
-    }
-
-    public void setCondition(CardCondition condition) {
-        this.condition = condition;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
+    @PreUpdate
+    private void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

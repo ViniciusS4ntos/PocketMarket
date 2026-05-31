@@ -14,5 +14,6 @@ public class UserDTOResponse {
     private String name;
     private String email;
     private UserRole role = UserRole.USER;
+    private Long credits;
 
 }

@@ -1,32 +1,30 @@
 package com.pocketmarket.cards.dto;
 
-import com.pocketmarket.enums.CardCondition;
-import com.pocketmarket.enums.CardRarity;
-
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
-import java.math.BigDecimal;
 
 public record CardRequestDTO(
 
         @NotBlank
+        String externalId,
+
+        @NotBlank
         String name,
 
+        @NotBlank
+        String setId,
+
+        @NotBlank
         String setName,
 
-        @NotNull
-        CardRarity rarity,
+        @NotBlank
+        String number,
 
-        @NotNull
-        CardCondition condition,
+        @NotBlank
+        String rarity,
 
-        @NotNull
-        BigDecimal price,
+        String imageSmallUrl,
 
-        Integer stock,
-
-        String imageUrl,
+        String imageLargeUrl,
 
         String description
 ) {

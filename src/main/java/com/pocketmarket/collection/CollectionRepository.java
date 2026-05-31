@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface CollectionRepository extends JpaRepository<CollectionCard, UUID> {
 
-    List<CollectionCard> findAllByUserId(Integer userId);
+    List<CollectionCard> findAllByUserId(UUID userId);
 
-    Optional<CollectionCard> findByUserIdAndCardId(Integer userId, UUID cardId);
+    Optional<CollectionCard> findByUserIdAndCardId(UUID userId, UUID cardId);
 }
