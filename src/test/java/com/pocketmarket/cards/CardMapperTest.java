@@ -15,6 +15,7 @@ class CardMapperTest {
 
     @Test
     void toResponseMapsCard() {
+        assertThat(new CardMapper()).isNotNull();
         Card card = Card.builder()
                 .id(UUID.randomUUID())
                 .externalId("base1-4")

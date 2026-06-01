@@ -185,6 +185,9 @@
 						<exclude>**/Card.class</exclude>
 						<exclude>**/CollectionCard.class</exclude>
 						<exclude>**/Favorite.class</exclude>
+						<exclude>**/AuctionBid.class</exclude>
+						<exclude>**/Listing.class</exclude>
+						<exclude>**/Purchase.class</exclude>
 						<exclude>**/User.class</exclude>
 						<exclude>**/UserCard.class</exclude>
 					</excludes>

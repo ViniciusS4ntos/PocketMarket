@@ -12,6 +12,7 @@ class CardCatalogMapperTest {
 
     @Test
     void toResponseMapsAllFields() {
+        assertThat(new CardCatalogMapper()).isNotNull();
         PokemonTcgCardResponse card = new PokemonTcgCardResponse(
                 "base1-4",
                 "Charizard",

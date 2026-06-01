@@ -1,8 +1,10 @@
 package com.pocketmarket.user;
 
+import com.pocketmarket.user.dtos.in.UserCreditsRequest;
 import com.pocketmarket.user.dtos.in.UserDTORequest;
 import com.pocketmarket.user.dtos.out.UserCreditsResponse;
 import com.pocketmarket.user.dtos.out.UserDTOResponse;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -39,5 +41,10 @@ public class UserController {
     @GetMapping("/me/credits")
     public ResponseEntity<UserCreditsResponse> myCredits(@AuthenticationPrincipal User currentUser){
         return userService.myCredits(currentUser);
+    }
+
+    @PatchMapping("/credit/{userId}")
+    public UserCreditsResponse addCredits(@PathVariable UUID userId, @RequestBody @Valid UserCreditsRequest request) {
+        return userService.addCredits(userId, request);
     }
 }

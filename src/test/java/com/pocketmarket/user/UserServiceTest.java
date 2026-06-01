@@ -1,6 +1,7 @@
 package com.pocketmarket.user;
 
 import com.pocketmarket.enums.UserRole;
+import com.pocketmarket.user.dtos.in.UserCreditsRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -99,6 +100,27 @@ class UserServiceTest {
         when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.myCredits(user))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Usuario nao encontrado!");
+    }
+
+    @Test
+    void addCreditsAddsToCurrentBalance() {
+        User user = user();
+        user.setCredits(100L);
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        var response = userService.addCredits(user.getId(), new UserCreditsRequest(50L));
+
+        assertThat(response.credits()).isEqualTo(150L);
+    }
+
+    @Test
+    void addCreditsThrowsWhenUserDoesNotExist() {
+        UUID id = UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.addCredits(id, new UserCreditsRequest(50L)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Usuario nao encontrado!");
     }

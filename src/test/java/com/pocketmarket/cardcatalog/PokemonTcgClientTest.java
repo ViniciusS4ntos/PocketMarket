@@ -34,6 +34,7 @@ class PokemonTcgClientTest {
 
     @Test
     void searchByNameReturnsEmptyListWhenNameIsBlank() {
+        assertThat(client.searchByName(null)).isEmpty();
         assertThat(client.searchByName(" ")).isEmpty();
     }
 
@@ -53,7 +54,20 @@ class PokemonTcgClientTest {
     }
 
     @Test
+    void searchByNameReturnsEmptyListWhenResponseDataIsNull() {
+        server.expect(once(), requestTo("https://api.pokemontcg.io/v2/cards?q=name:missing&pageSize=10"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("""
+                        {"data":null,"page":1,"pageSize":10,"count":0,"totalCount":0}
+                        """, org.springframework.http.MediaType.APPLICATION_JSON));
+
+        assertThat(client.searchByName("missing")).isEmpty();
+        server.verify();
+    }
+
+    @Test
     void findByExternalIdReturnsNullWhenBlankOrNotFound() {
+        assertThat(client.findByExternalId(null)).isNull();
         assertThat(client.findByExternalId(" ")).isNull();
 
         server.expect(once(), requestTo("https://api.pokemontcg.io/v2/cards/missing"))
@@ -91,6 +105,28 @@ class PokemonTcgClientTest {
         var response = client.findCards(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "name")));
 
         assertThat(response.data()).isEmpty();
+        server.verify();
+    }
+
+    @Test
+    void findCardsHandlesUnsortedAndMultipleSorts() {
+        server.expect(once(), requestTo("https://api.pokemontcg.io/v2/cards?page=1&pageSize=10"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("""
+                        {"data":[],"page":1,"pageSize":10,"count":0,"totalCount":0}
+                        """, org.springframework.http.MediaType.APPLICATION_JSON));
+
+        client.findCards(PageRequest.of(0, 10));
+        server.verify();
+
+        server.reset();
+        server.expect(once(), requestTo("https://api.pokemontcg.io/v2/cards?page=1&pageSize=10&orderBy=name,-number"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("""
+                        {"data":[],"page":1,"pageSize":10,"count":0,"totalCount":0}
+                        """, org.springframework.http.MediaType.APPLICATION_JSON));
+
+        client.findCards(PageRequest.of(0, 10, Sort.by("name").and(Sort.by(Sort.Direction.DESC, "number"))));
         server.verify();
     }
 }
