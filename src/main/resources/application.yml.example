@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pocketmarket
+    username: postgres
+    password: SUA_SENHA_AQUI
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+api:
+  security:
+    token:
+      secret: COLOQUE_UMA_CHAVE_SECRETA_AQUI

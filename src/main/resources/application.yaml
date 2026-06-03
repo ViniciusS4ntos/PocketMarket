@@ -3,9 +3,9 @@ spring:
     name: pocketmarket
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pocketmarket}
+    username: ${SPRING_DATASOURCE_USERNAME:admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:123456}
 
   jpa:
     hibernate:
@@ -15,3 +15,25 @@ spring:
 
   jackson:
     time-zone: America/Recife
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+app:
+  upload:
+    base-dir: uploads
+    image-dir: images
+    public-path: /uploads
+
+api:
+  security:
+    token:
+      secret: 8fK#vQ2mL@9xTz!A7rP$uN5wE&cY1hJkL0sDfG^bNmQ4vXzR!pT8yHcW3mQa
+
+pokemon-tcg:
+  base-url: https://api.pokemontcg.io/v2
+  api-key:
+
+kind: Application
