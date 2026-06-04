@@ -2,15 +2,17 @@ spring:
   application:
     name: pocketmarket
 
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pocketmarket}
-    username: ${SPRING_DATASOURCE_USERNAME:admin}
-    password: ${SPRING_DATASOURCE_PASSWORD:123456}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
-
     show-sql: true
 
   jackson:
@@ -30,10 +32,8 @@ app:
 api:
   security:
     token:
-      secret: 8fK#vQ2mL@9xTz!A7rP$uN5wE&cY1hJkL0sDfG^bNmQ4vXzR!pT8yHcW3mQa
+      secret: ${API_SECURITY_TOKEN_SECRET:8fK#vQ2mL@9xTz!A7rP$uN5wE&cY1hJkL0sDfG^bNmQ4vXzR!pT8yHcW3mQa}
 
 pokemon-tcg:
   base-url: https://api.pokemontcg.io/v2
-  api-key:
-
-kind: Application
+  api-key: ${POKEMON_TCG_API_KEY:}

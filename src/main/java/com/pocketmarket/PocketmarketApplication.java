@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableConfigurationProperties({StorageProperties.class, PokemonTcgProperties.class})
 @SpringBootApplication
 @EnableScheduling
-public class PocketmarketApplication {
+public class   PocketmarketApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PocketmarketApplication.class, args);
