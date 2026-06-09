@@ -3,10 +3,10 @@ package com.pocketmarket.cards;
 import com.pocketmarket.cardcatalog.PokemonTcgClient;
 import com.pocketmarket.cardcatalog.dto.PokemonTcgCardResponse;
 import com.pocketmarket.cards.dto.CardResponseDTO;
+import com.pocketmarket.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -20,7 +20,6 @@ public class CardService {
     private final PokemonTcgClient pokemonTcgClient;
 
     public List<CardResponseDTO> findAllCards() {
-
         return cardRepository.findAll()
                 .stream()
                 .map(CardMapper::toResponse)
@@ -29,17 +28,14 @@ public class CardService {
 
     public CardResponseDTO findCard(UUID id) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Carta não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Carta não encontrada"));
         return CardMapper.toResponse(card);
     }
 
     public void delete(UUID id) {
-
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Carta não encontrada"));
-
+                .orElseThrow(() -> new NotFoundException("Carta não encontrada"));
         card.setDeleted(true);
-
         cardRepository.save(card);
     }
 
@@ -56,7 +52,6 @@ public class CardService {
         }
 
         Card card = CardMapper.toEntity(pokemonCard);
-
         return cardRepository.save(card);
     }
 }

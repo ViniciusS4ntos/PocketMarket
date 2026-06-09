@@ -1,5 +1,6 @@
 package com.pocketmarket.user;
 
+import com.pocketmarket.exceptions.NotFoundException;
 import com.pocketmarket.user.dtos.in.UserCreditsRequest;
 import com.pocketmarket.user.dtos.out.UserCreditsResponse;
 import jakarta.validation.Valid;
@@ -55,7 +56,7 @@ public class UserService {
     @Transactional
     public UserCreditsResponse addCredits(UUID userId, @Valid UserCreditsRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado!"));
+                .orElseThrow(() -> new NotFoundException("Usuario nao encontrado!"));
 
         user.setCredits(user.getCredits() + request.credits());
         userRepository.save(user);

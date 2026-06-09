@@ -3,6 +3,8 @@ package com.pocketmarket.trade;
 import com.pocketmarket.auth.AuthService;
 import com.pocketmarket.enums.TradeItemType;
 import com.pocketmarket.enums.TradeStatus;
+import com.pocketmarket.exceptions.ForbiddenException;
+import com.pocketmarket.exceptions.NotFoundException;
 import com.pocketmarket.trade.dto.CreateTradeOfferRequest;
 import com.pocketmarket.trade.dto.TradeOfferResponse;
 import com.pocketmarket.user.User;
@@ -38,17 +40,12 @@ public class TradeOfferService {
         this.authService = authService;
     }
 
-    public TradeOfferResponse create(
-            CreateTradeOfferRequest request
-    ) {
+    public TradeOfferResponse create(CreateTradeOfferRequest request) {
 
         User sender = authService.getAuthenticatedUser();
 
-        User receiver = userRepository.findById(
-                request.receiverId()
-        ).orElseThrow(() ->
-                new RuntimeException("Usuário destinatário não encontrado")
-        );
+        User receiver = userRepository.findById(request.receiverId())
+                .orElseThrow(() -> new NotFoundException("Usuário destinatário não encontrado"));
 
         TradeOffer tradeOffer = TradeOffer.builder()
                 .sender(sender)
@@ -59,19 +56,12 @@ public class TradeOfferService {
 
         tradeOfferRepository.save(tradeOffer);
 
-        // Cartas ofertadas
         for (UUID cardId : request.offeredCardIds()) {
-
-            UserCard userCard = userCardRepository
-                    .findById(cardId)
-                    .orElseThrow(() ->
-                            new RuntimeException("Carta não encontrada")
-                    );
+            UserCard userCard = userCardRepository.findById(cardId)
+                    .orElseThrow(() -> new NotFoundException("Carta não encontrada"));
 
             if (!userCard.getOwner().getId().equals(sender.getId())) {
-                throw new RuntimeException(
-                        "Você não é proprietário da carta ofertada"
-                );
+                throw new ForbiddenException("Você não é proprietário da carta ofertada");
             }
 
             TradeOfferItem item = TradeOfferItem.builder()
@@ -83,14 +73,9 @@ public class TradeOfferService {
             tradeOfferItemRepository.save(item);
         }
 
-        // Cartas solicitadas
         for (UUID cardId : request.requestedCardIds()) {
-
-            UserCard userCard = userCardRepository
-                    .findById(cardId)
-                    .orElseThrow(() ->
-                            new RuntimeException("Carta não encontrada")
-                    );
+            UserCard userCard = userCardRepository.findById(cardId)
+                    .orElseThrow(() -> new NotFoundException("Carta não encontrada"));
 
             TradeOfferItem item = TradeOfferItem.builder()
                     .tradeOffer(tradeOffer)
@@ -105,9 +90,7 @@ public class TradeOfferService {
     }
 
     public List<TradeOfferResponse> getSent() {
-
         User sender = authService.getAuthenticatedUser();
-
         return tradeOfferRepository.findBySender(sender)
                 .stream()
                 .map(this::mapToResponse)
@@ -115,9 +98,7 @@ public class TradeOfferService {
     }
 
     public List<TradeOfferResponse> getReceived() {
-
         User receiver = authService.getAuthenticatedUser();
-
         return tradeOfferRepository.findByReceiver(receiver)
                 .stream()
                 .map(this::mapToResponse)
@@ -125,23 +106,16 @@ public class TradeOfferService {
     }
 
     public TradeOfferResponse accept(UUID id) {
-
-        TradeOffer tradeOffer = tradeOfferRepository
-                .findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Oferta não encontrada")
-                );
+        TradeOffer tradeOffer = tradeOfferRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Oferta não encontrada"));
 
         tradeOffer.setStatus(TradeStatus.ACCEPTED);
-
         tradeOfferRepository.save(tradeOffer);
 
         return mapToResponse(tradeOffer);
     }
 
-    private TradeOfferResponse mapToResponse(
-            TradeOffer tradeOffer
-    ) {
+    private TradeOfferResponse mapToResponse(TradeOffer tradeOffer) {
         return new TradeOfferResponse(
                 tradeOffer.getId(),
                 tradeOffer.getSender().getName(),
