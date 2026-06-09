@@ -1,6 +1,7 @@
 package com.pocketmarket.security;
 
 import com.pocketmarket.auth.JwtService;
+import com.pocketmarket.exceptions.NotFoundException;
 import com.pocketmarket.user.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -38,30 +39,23 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.replace("Bearer ", "");
-
         String email = jwtService.validateToken(token);
 
         if (email != null) {
+            UserDetails user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
 
-            UserDetails user =
-                    userRepository.findByEmail(email)
-                            .orElseThrow(() -> new RuntimeException("Id do usuario  nao encontrado!"));
-
-            var authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            user,
-                            null,
-                            user.getAuthorities()
-                    );
-
-            authentication.setDetails(
-                    new WebAuthenticationDetailsSource()
-                            .buildDetails(request)
+            var authentication = new UsernamePasswordAuthenticationToken(
+                    user,
+                    null,
+                    user.getAuthorities()
             );
 
-            SecurityContextHolder
-                    .getContext()
-                    .setAuthentication(authentication);
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);

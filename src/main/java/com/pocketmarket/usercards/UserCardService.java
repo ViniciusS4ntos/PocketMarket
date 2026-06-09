@@ -3,6 +3,8 @@ package com.pocketmarket.usercards;
 import com.pocketmarket.cards.Card;
 import com.pocketmarket.cards.CardService;
 import com.pocketmarket.enums.UserCardStatus;
+import com.pocketmarket.exceptions.ForbiddenException;
+import com.pocketmarket.exceptions.NotFoundException;
 import com.pocketmarket.user.User;
 import com.pocketmarket.user.UserRepository;
 import com.pocketmarket.usercards.dto.request.UserCardRequest;
@@ -27,7 +29,7 @@ public class UserCardService {
     @Transactional
     public UserCardResponse createUserCard(User currentUser, @Valid UserCardRequest request) {
         User user = userRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
 
         Card card = cardService.findOrImportByExternalId(request.externalCardId());
 
@@ -35,33 +37,30 @@ public class UserCardService {
         userCard.setStatus(UserCardStatus.AVAILABLE);
 
         UserCard userCardSaved = userCardRepository.save(userCard);
-
         return UserCardMapper.toResponse(userCardSaved);
     }
 
     public Page<UserCardResponse> getMyCards(User currentUser, Pageable pageable) {
         User user = userRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
 
         Page<UserCard> userCardsPage = userCardRepository.findByOwner(user, pageable);
-
         return userCardsPage.map(UserCardMapper::toResponse);
     }
 
     public UserCardResponse getUserCard(UUID id) {
         UserCard userCard = userCardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("UserCard não encontrado"));
-
+                .orElseThrow(() -> new NotFoundException("UserCard não encontrado"));
         return UserCardMapper.toResponse(userCard);
     }
 
     @Transactional
     public void deleteUserCard(UUID id, User currentUser) {
         UserCard userCard = userCardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("UserCard não encontrado"));
+                .orElseThrow(() -> new NotFoundException("UserCard não encontrado"));
 
         if (!userCard.getOwner().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("Você não tem permissão para deletar este UserCard");
+            throw new ForbiddenException("Você não tem permissão para deletar este UserCard");
         }
 
         userCardRepository.delete(userCard);

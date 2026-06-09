@@ -2,12 +2,14 @@ package com.pocketmarket.auth;
 
 import com.pocketmarket.auth.dto.*;
 import com.pocketmarket.enums.UserRole;
+import com.pocketmarket.exceptions.BusinessException;
+import com.pocketmarket.exceptions.NotFoundException;
 import com.pocketmarket.user.User;
 import com.pocketmarket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Objects;
 
@@ -19,10 +21,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    // criar user
     public LoginResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new RuntimeException("Email já cadastrado");
+            throw new BusinessException("Email já cadastrado");
         }
         var user = User.builder()
                 .name(request.name())
@@ -35,27 +36,23 @@ public class AuthService {
         return new LoginResponse(token, user.getEmail(), user.getName());
     }
 
-    // logar user
     public LoginResponse login(LoginRequest request) {
         var user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("Senha incorreta");
+            throw new BusinessException("Senha incorreta");
         }
         var token = jwtService.generateToken(user);
         return new LoginResponse(token, user.getEmail(), user.getName());
     }
 
     public User getAuthenticatedUser() {
-
         String email = Objects.requireNonNull(
                 SecurityContextHolder.getContext().getAuthentication(),
                 "Usuário não autenticado"
         ).getName();
 
         return userRepository.findByEmail(email)
-                .orElseThrow(
-                        () -> new RuntimeException("Usuário não encontrado")
-                );
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
     }
 }
