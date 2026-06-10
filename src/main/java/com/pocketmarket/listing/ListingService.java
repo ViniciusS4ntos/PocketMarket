@@ -42,6 +42,10 @@ public class ListingService {
         UserCard userCard = userCardRepository.findById(userCardId)
                 .orElseThrow(() -> new RuntimeException("UserCard nao encontrado!"));
 
+        if (request.price() == null || request.price() <= 0) {
+            throw new RuntimeException("O preco deve ser maior que zero.");
+        }
+
         if (!userCard.getOwner().getId().equals(user.getId())) {
             throw new RuntimeException("Voce nao tem permissao para listar este card!");
         }

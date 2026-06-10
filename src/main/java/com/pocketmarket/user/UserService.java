@@ -58,6 +58,10 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Usuario nao encontrado!"));
 
+        if (request.credits() <= 0) {
+            throw new IllegalArgumentException("A quantidade de creditos deve ser positiva.");
+        }
+
         user.setCredits(user.getCredits() + request.credits());
         userRepository.save(user);
 

@@ -4,6 +4,7 @@ import com.pocketmarket.cards.Card;
 import com.pocketmarket.cards.CardRepository;
 import com.pocketmarket.favorite.dto.FavoriteResponse;
 import com.pocketmarket.user.User;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,12 @@ public class FavoriteService {
     private final FavoriteRepository favoriteRepository;
     private final CardRepository cardRepository;
 
+    @Transactional
     public FavoriteResponse addFavorite(UUID cardId, User currentUser) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found"));
+
+
 
         if (favoriteRepository.existsByUserIdAndCardId(currentUser.getId(), cardId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Card already favorited");
@@ -31,6 +35,10 @@ public class FavoriteService {
                 .user(currentUser)
                 .card(card)
                 .build();
+
+        if (!favorite.getUser().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only remove your own favorites");
+        }
 
         favoriteRepository.save(favorite);
         return toResponse(favorite);
@@ -43,6 +51,7 @@ public class FavoriteService {
                 .toList();
     }
 
+    @Transactional
     public void removeFavorite(UUID cardId, User currentUser) {
         Favorite favorite = favoriteRepository
                 .findByUserIdAndCardId(currentUser.getId(), cardId)
