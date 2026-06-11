@@ -2,41 +2,23 @@ version: "3.9"
 
 services:
 
-  db:
-    image: postgres:17
-    container_name: pocketmarket-db
-
-    environment:
-      POSTGRES_DB: pocketmarket
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: 123456
-
-    ports:
-      - "5432:5432"
-
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-    networks:
-      - pocket-network
-
-    restart: always
-
-
   app:
     build: .
     container_name: pocketmarket-api
 
-    depends_on:
-      - db
+    volumes:
+      - uploads_data:/app/uploads
 
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/pocketmarket
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
 
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_PROFILES_ACTIVE: docker
+
+      API_SECURITY_TOKEN_SECRET: ${API_SECURITY_TOKEN_SECRET}
+      POKEMON_TCG_API_KEY: ${POKEMON_TCG_API_KEY:-}
 
     ports:
       - "8080:8080"
@@ -48,7 +30,7 @@ services:
 
 
 volumes:
-  postgres_data:
+  uploads_data:
 
 
 networks:

@@ -2,6 +2,9 @@ spring:
   application:
     name: pocketmarket
 
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -10,8 +13,27 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
-
     show-sql: true
 
   jackson:
     time-zone: America/Recife
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+app:
+  upload:
+    base-dir: uploads
+    image-dir: images
+    public-path: /uploads
+
+api:
+  security:
+    token:
+      secret: ${API_SECURITY_TOKEN_SECRET:8fK#vQ2mL@9xTz!A7rP$uN5wE&cY1hJkL0sDfG^bNmQ4vXzR!pT8yHcW3mQa}
+
+pokemon-tcg:
+  base-url: https://api.pokemontcg.io/v2
+  api-key: ${POKEMON_TCG_API_KEY:}
