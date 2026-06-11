@@ -53,6 +53,15 @@ public class UserCardController {
         return userCardService.getMyCards(currentUser, pageable);
     }
 
+    @GetMapping
+    @Operation(summary = "Listar todas as cartas", description = "Retorna uma lista paginada de todas as cartas dos usuários no sistema")
+    @ApiResponse(responseCode = "200", description = "Cartas encontradas com sucesso",
+            content = @Content(schema = @Schema(implementation = Page.class)))
+    @ApiResponse(responseCode = "500", description = "Erro de servidor")
+    public Page<UserCardResponse> getAllCards(@Parameter(description = "Configuração de paginação") @PageableDefault(size = 20) Pageable pageable) {
+        return userCardService.getAllCards(pageable);
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar carta do usuário por ID", description = "Retorna os dados de uma carta específica da coleção de um usuário")
     @ApiResponse(responseCode = "200", description = "Carta encontrada com sucesso",
