@@ -319,6 +319,9 @@ SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/pocketmarket
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=sua_senha
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+ALLOWED_ORIGINS=https://meusite.com
+
 API_SECURITY_TOKEN_SECRET=coloque_uma_chave_secreta_grande_aqui
 POKEMON_TCG_API_KEY=
 ```
